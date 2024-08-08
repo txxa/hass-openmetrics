@@ -1,0 +1,82 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "invalid_provider": "Invalid metrics provider",
+            "no_resources": "No resources selected",
+            "processing_error": "Data processing error",
+            "request_error": "HTTP request error",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "config": {
+                "data": {
+                    "resources": "Resources",
+                    "scan_interval": "Scan interval [s]"
+                },
+                "description": "Define the resources and scan interval"
+            },
+            "user": {
+                "data": {
+                    "password": "Password",
+                    "url": "Provider URL",
+                    "username": "Username",
+                    "verify_ssl": "Verify SSL certificate"
+                },
+                "description": "Define the connection details"
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "cpu_temp_celsius": {
+                "name": "CPU temperature"
+            },
+            "cpu_usage_pct": {
+                "name": "CPU usage"
+            },
+            "disk_usage_bytes": {
+                "name": "Disk usage"
+            },
+            "disk_usage_pct": {
+                "name": "Disk usage (pct)"
+            },
+            "memory_usage_bytes": {
+                "name": "Memory usage"
+            },
+            "memory_usage_pct": {
+                "name": "Memory usage (pct)"
+            },
+            "network_receive_bytes": {
+                "name": "Network receive"
+            },
+            "network_transmit_bytes": {
+                "name": "Network transmit"
+            },
+            "uptime_seconds": {
+                "name": "Uptime"
+            }
+        }
+    },
+    "options": {
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "no_resources": "No resources selected",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "resources": "Resources",
+                    "scan_interval": "Scan interval [s]"
+                },
+                "description": "Define the resources and scan interval"
+            }
+        }
+    }
+}

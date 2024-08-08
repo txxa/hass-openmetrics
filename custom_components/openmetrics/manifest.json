@@ -1,0 +1,18 @@
+{
+  "domain": "openmetrics",
+  "name": "OpenMetrics",
+  "codeowners": [
+    "@txxa"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/txxa/hass-openmetrics",
+  "homekit": {},
+  "integration_type": "service",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/txxa/hass-openmetrics/issues",
+  "requirements": [],
+  "ssdp": [],
+  "version": "0.1.0",
+  "zeroconf": []
+}

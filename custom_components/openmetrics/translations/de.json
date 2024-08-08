@@ -1,0 +1,82 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Gerät/Service ist bereits konfiguriert"
+        },
+        "error": {
+            "cannot_connect": "Verbindung fehlgeschlagen",
+            "invalid_auth": "Ungültige Authentifizierung",
+            "invalid_provider": "Ungültiger Metrik-Provider",
+            "no_resources": "Keine Ressource(n) ausgewählt",
+            "processing_error": "Datenverarbeitung fehlgeschlagen",
+            "request_error": "HTTP Anfrage fehlgeschlagen",
+            "unknown": "Unerwarteter Fehler"
+        },
+        "step": {
+            "config": {
+                "data": {
+                    "resources": "Ressourcen",
+                    "scan_interval": "Scan-Intervall [s]"
+                },
+                "description": "Definiere die Ressourcen und das Scan-Intervall"
+            },
+            "user": {
+                "data": {
+                    "password": "Passwort",
+                    "url": "Provider-URL",
+                    "username": "Benutzername",
+                    "verify_ssl": "SSL-Zertifikat überprüfen"
+                },
+                "description": "Definiere die Verbindungsdetails"
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "cpu_temp_celsius": {
+                "name": "CPU-Temperatur"
+            },
+            "cpu_usage_pct": {
+                "name": "CPU-Auslastung"
+            },
+            "disk_usage_bytes": {
+                "name": "Festplattennutzung"
+            },
+            "disk_usage_pct": {
+                "name": "Festplattennutzung (Prozent)"
+            },
+            "memory_usage_bytes": {
+                "name": "Arbeitsspeichernutzung"
+            },
+            "memory_usage_pct": {
+                "name": "Arbeitsspeichernutzung (Prozent)"
+            },
+            "network_receive_bytes": {
+                "name": "Dateneingang"
+            },
+            "network_transmit_bytes": {
+                "name": "Datenausgang"
+            },
+            "uptime_seconds": {
+                "name": "Laufzeit"
+            }
+        }
+    },
+    "options": {
+        "error": {
+            "cannot_connect": "Verbindung fehlgeschlagen",
+            "invalid_auth": "Ungültige Authentifizierung",
+            "no_resources": "Keine Ressourcen ausgewählt",
+            "unknown": "Unerwarteter Fehler"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "resources": "Ressourcen",
+                    "scan_interval": "Scan-Intervall [s]"
+                },
+                "description": "Definiere die Ressourcen und das Scan-Intervall"
+            }
+        }
+    }
+}

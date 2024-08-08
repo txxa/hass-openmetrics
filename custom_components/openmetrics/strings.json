@@ -1,0 +1,82 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Define the connection details",
+        "data": {
+          "url": "Provider URL",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "verify_ssl": "Verify SSL certificate"
+        }
+      },
+      "config": {
+        "description": "Define the resources and scan interval",
+        "data": {
+          "resources": "Resources",
+          "scan_interval": "Scan interval [s]"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "invalid_provider": "Invalid metrics provider",
+      "no_resources": "No resources selected",
+      "processing_error": "Data processing error",
+      "request_error": "HTTP request error",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "no_resources": "No resources selected",
+      "unknown": "Unexpected error"
+    },
+    "step": {
+      "init": {
+        "description": "Define the resources and scan interval",
+        "data": {
+          "resources": "Resources",
+          "scan_interval": "Scan interval [s]"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "uptime_seconds": {
+        "name": "Uptime"
+      },
+      "cpu_usage_pct": {
+        "name": "CPU usage"
+      },
+      "cpu_temp_celsius": {
+        "name": "CPU temperature"
+      },
+      "memory_usage_bytes": {
+        "name": "Memory usage"
+      },
+      "memory_usage_pct": {
+        "name": "Memory usage (pct)"
+      },
+      "disk_usage_bytes": {
+        "name": "Disk usage"
+      },
+      "disk_usage_pct": {
+        "name": "Disk usage (pct)"
+      },
+      "network_receive_bytes": {
+        "name": "Network receive"
+      },
+      "network_transmit_bytes": {
+        "name": "Network transmit"
+      }
+    }
+  }
+}
