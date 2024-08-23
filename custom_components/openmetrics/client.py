@@ -184,7 +184,7 @@ class OpenMetricsClient:
         if family.name == CONTAINER_START_TIME:
             for sample in family.samples:
                 name = sample.labels.get("name", None)
-                if name != "":
+                if name is not None and name != "":
                     container_name = name
                     container_image = sample.labels.get("image", "")
                     image_version = sample.labels.get(
@@ -213,6 +213,8 @@ class OpenMetricsClient:
                     self._extract_node_metadata(family, output)
                 elif self.is_cadvisor and "container_" in family.name:
                     self._extract_container_metadata(family, output)
+            if len(output["resources"]) == 0:
+                raise ProcessingError("No resources found")
         except Exception as e:
             raise ProcessingError(str(e)) from e
         else:
