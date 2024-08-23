@@ -198,7 +198,8 @@ class OpenMetricsSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self.entity_description = description
         self.device_info = device_info
-        self._attr_unique_id = f"{device_info.get('model')}_{description.key}"
+        identifier = next(iter(device_info.get("identifiers", {})))
+        self._attr_unique_id = f"{identifier[1]}_{description.key}"
 
     @property
     def translation_key(self) -> str | None:
