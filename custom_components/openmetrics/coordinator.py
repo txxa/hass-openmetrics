@@ -197,7 +197,9 @@ class OpenMetricsDataUpdateCoordinator(DataUpdateCoordinator):
             memory_usage_bytes = metrics[CONTAINER_MEMORY_USAGE]
         if CONTAINER_MEMORY_LIMIT in metrics:
             memory_total_bytes = metrics[CONTAINER_MEMORY_LIMIT]
-        if MACHINE_MEMORY in metrics and memory_total_bytes == 0:
+        if MACHINE_MEMORY in metrics and (
+            memory_total_bytes is None or memory_total_bytes == 0
+        ):
             memory_total_bytes = metrics[MACHINE_MEMORY]
         # Calculate memory usage
         if memory_total_bytes is not None and (
@@ -205,7 +207,8 @@ class OpenMetricsDataUpdateCoordinator(DataUpdateCoordinator):
         ):
             if memory_usage_bytes is None:
                 memory_usage_bytes = memory_total_bytes - memory_free_bytes
-            memory_usage_pct = memory_usage_bytes / memory_total_bytes * 100
+            if memory_total_bytes > 0:
+                memory_usage_pct = memory_usage_bytes / memory_total_bytes * 100
         # Return values
         return (memory_usage_bytes, memory_usage_pct)
 
