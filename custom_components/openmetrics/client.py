@@ -11,11 +11,11 @@ from custom_components.openmetrics.lib.metrics_core import Metric
 
 from .const import (
     CADVISOR_VERSION_INFO,
+    CONTAINER_METRICS,
     CONTAINER_START_TIME,
-    METRICS_CADVISOR,
-    METRICS_NODE_EXPORTER,
     NODE_CPU_IDLE_SECONDS,
     NODE_EXPORTER_BUILD_INFO,
+    NODE_METRICS,
     NODE_OS_INFO,
     NODE_UNAME_INFO,
     PROVIDER_NAME_CADVISOR,
@@ -69,6 +69,15 @@ class OpenMetricsClient:
             self.password = str(password)
         self.is_node_exporter = False
         self.is_cadvisor = False
+
+    def _get_metric_filters(self, metric_definitions: dict) -> dict:
+        """Get metric filters."""
+        metric_filters = {}
+        for metric_data in metric_definitions.values():
+            for metric_key, metric_filter in metric_data.items():
+                if metric_key not in metric_filters:
+                    metric_filters[metric_key] = metric_filter
+        return metric_filters
 
     async def _make_request(
         self,
@@ -282,9 +291,9 @@ class OpenMetricsClient:
         try:
             # Define metrics set
             if self.is_node_exporter:
-                metrics = METRICS_NODE_EXPORTER
+                metrics = self._get_metric_filters(NODE_METRICS)
             elif self.is_cadvisor:
-                metrics = METRICS_CADVISOR
+                metrics = self._get_metric_filters(CONTAINER_METRICS)
             else:
                 exception_message = "Unknown provider"
                 raise ValueError(exception_message)
