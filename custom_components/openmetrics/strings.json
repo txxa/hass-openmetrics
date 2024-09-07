@@ -1,82 +1,107 @@
 {
-  "config": {
-    "step": {
-      "user": {
-        "description": "Define the connection details",
-        "data": {
-          "url": "Provider URL",
-          "username": "[%key:common::config_flow::data::username%]",
-          "password": "[%key:common::config_flow::data::password%]",
-          "verify_ssl": "Verify SSL certificate"
+    "config": {
+        "abort": {
+            "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+        },
+        "error": {
+            "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+            "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+            "invalid_provider": "Invalid metrics provider",
+            "no_metrics": "No metrics selected",
+            "no_resources": "No resources selected",
+            "processing_error": "Data processing error",
+            "request_error": "HTTP request error",
+            "unknown": "[%key:common::config_flow::error::unknown%]"
+        },
+        "step": {
+            "metrics": {
+                "data": {
+                    "metrics": "Available metrics"
+                },
+                "description": "Define the metrics to be collected"
+            },
+            "resources": {
+                "data": {
+                    "resources": "Available resources"
+                },
+                "description": "Define the resources to be monitored"
+            },
+            "user": {
+                "data": {
+                    "password": "[%key:common::config_flow::data::password%]",
+                    "url": "Provider URL",
+                    "username": "[%key:common::config_flow::data::username%]",
+                    "verify_ssl": "Verify SSL certificate"
+                },
+                "description": "Define the connection details"
+            }
         }
-      },
-      "config": {
-        "description": "Define the resources and scan interval",
-        "data": {
-          "resources": "Resources",
-          "scan_interval": "Scan interval [s]"
+    },
+    "entity": {
+        "sensor": {
+            "uptime_seconds": {
+                "name": "Uptime"
+            },
+            "cpu_usage_pct": {
+                "name": "CPU usage"
+            },
+            "cpu_temp_celsius": {
+                "name": "CPU temperature"
+            },
+            "memory_usage_bytes": {
+                "name": "Memory usage"
+            },
+            "memory_usage_pct": {
+                "name": "Memory usage (percent)"
+            },
+            "disk_usage_bytes": {
+                "name": "Disk usage"
+            },
+            "disk_usage_pct": {
+                "name": "Disk usage (percent)"
+            },
+            "network_receive_bytes": {
+                "name": "Network receive"
+            },
+            "network_transmit_bytes": {
+                "name": "Network transmit"
+            }
         }
-      }
     },
-    "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-      "invalid_provider": "Invalid metrics provider",
-      "no_resources": "No resources selected",
-      "processing_error": "Data processing error",
-      "request_error": "HTTP request error",
-      "unknown": "[%key:common::config_flow::error::unknown%]"
-    },
-    "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
-    }
-  },
-  "options": {
-    "error": {
-      "cannot_connect": "Failed to connect",
-      "invalid_auth": "Invalid authentication",
-      "no_resources": "No resources selected",
-      "unknown": "Unexpected error"
-    },
-    "step": {
-      "init": {
-        "description": "Define the resources and scan interval",
-        "data": {
-          "resources": "Resources",
-          "scan_interval": "Scan interval [s]"
+    "options": {
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "no_resources": "No resources selected",
+            "no_metrics": "No metrics selected",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "init": {
+                "data": {
+                    "resources": "Resources to be monitored",
+                    "metrics": "Metrics to be collected",
+                    "scan_interval": "Scan interval [s]"
+                },
+                "data_description": {
+                    "metrics": "Note: The selection is applied to all resources."
+                }
+            }
         }
-      }
+    },
+    "selector": {
+        "metrics": {
+            "options": {
+                "cpu_temp_celsius": "CPU temperature",
+                "cpu_usage_pct": "CPU usage %",
+                "disk_usage_bytes": "Disk usage",
+                "disk_usage_pct": "Disk usage (percent)",
+                "memory_usage_bytes": "Memory usage",
+                "memory_usage_pct": "Memory usage (percent)",
+                "network_receive_bytes": "Network receive",
+                "network_transmit_bytes": "Network transmit",
+                "uptime_seconds": "Uptime"
+            }
+        }
     }
-  },
-  "entity": {
-    "sensor": {
-      "uptime_seconds": {
-        "name": "Uptime"
-      },
-      "cpu_usage_pct": {
-        "name": "CPU usage"
-      },
-      "cpu_temp_celsius": {
-        "name": "CPU temperature"
-      },
-      "memory_usage_bytes": {
-        "name": "Memory usage"
-      },
-      "memory_usage_pct": {
-        "name": "Memory usage (pct)"
-      },
-      "disk_usage_bytes": {
-        "name": "Disk usage"
-      },
-      "disk_usage_pct": {
-        "name": "Disk usage (pct)"
-      },
-      "network_receive_bytes": {
-        "name": "Network receive"
-      },
-      "network_transmit_bytes": {
-        "name": "Network transmit"
-      }
-    }
-  }
 }

@@ -7,18 +7,24 @@
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
             "invalid_provider": "Invalid metrics provider",
+            "no_metrics": "No metrics selected",
             "no_resources": "No resources selected",
             "processing_error": "Data processing error",
             "request_error": "HTTP request error",
             "unknown": "Unexpected error"
         },
         "step": {
-            "config": {
+            "metrics": {
                 "data": {
-                    "resources": "Resources",
-                    "scan_interval": "Scan interval [s]"
+                    "metrics": "Available metrics"
                 },
-                "description": "Define the resources and scan interval"
+                "description": "Define the metrics to be collected"
+            },
+            "resources": {
+                "data": {
+                    "resources": "Available resources"
+                },
+                "description": "Define the resources to be monitored"
             },
             "user": {
                 "data": {
@@ -33,32 +39,32 @@
     },
     "entity": {
         "sensor": {
+            "uptime_seconds": {
+                "name": "Uptime"
+            },
             "cpu_temp_celsius": {
                 "name": "CPU temperature"
             },
             "cpu_usage_pct": {
                 "name": "CPU usage"
             },
-            "disk_usage_bytes": {
-                "name": "Disk usage"
-            },
-            "disk_usage_pct": {
-                "name": "Disk usage (pct)"
-            },
-            "memory_usage_bytes": {
-                "name": "Memory usage"
-            },
             "memory_usage_pct": {
-                "name": "Memory usage (pct)"
+                "name": "Memory usage (percent)"
             },
             "network_receive_bytes": {
                 "name": "Network receive"
             },
+            "disk_usage_bytes": {
+                "name": "Disk usage"
+            },
+            "disk_usage_pct": {
+                "name": "Disk usage (percent)"
+            },
+            "memory_usage_bytes": {
+                "name": "Memory usage"
+            },
             "network_transmit_bytes": {
                 "name": "Network transmit"
-            },
-            "uptime_seconds": {
-                "name": "Uptime"
             }
         }
     },
@@ -67,15 +73,34 @@
             "cannot_connect": "Failed to connect",
             "invalid_auth": "Invalid authentication",
             "no_resources": "No resources selected",
+            "no_metrics": "No metrics selected",
             "unknown": "Unexpected error"
         },
         "step": {
             "init": {
                 "data": {
-                    "resources": "Resources",
+                    "resources": "Resources to be monitored",
+                    "metrics": "Metrics to be collected",
                     "scan_interval": "Scan interval [s]"
                 },
-                "description": "Define the resources and scan interval"
+                "data_description": {
+                    "metrics": "Note: The selection is applied to all resources."
+                }
+            }
+        }
+    },
+    "selector": {
+        "metrics": {
+            "options": {
+                "cpu_temp_celsius": "CPU temperature",
+                "cpu_usage_pct": "CPU usage %",
+                "disk_usage_bytes": "Disk usage",
+                "disk_usage_pct": "Disk usage (percent)",
+                "memory_usage_bytes": "Memory usage",
+                "memory_usage_pct": "Memory usage (percent)",
+                "network_receive_bytes": "Network receive",
+                "network_transmit_bytes": "Network transmit",
+                "uptime_seconds": "Uptime"
             }
         }
     }

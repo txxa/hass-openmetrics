@@ -7,18 +7,24 @@
             "cannot_connect": "Verbindung fehlgeschlagen",
             "invalid_auth": "Ungültige Authentifizierung",
             "invalid_provider": "Ungültiger Metrik-Provider",
+            "no_metrics": "Keine Metrik(en) ausgewählt",
             "no_resources": "Keine Ressource(n) ausgewählt",
             "processing_error": "Datenverarbeitung fehlgeschlagen",
             "request_error": "HTTP Anfrage fehlgeschlagen",
             "unknown": "Unerwarteter Fehler"
         },
         "step": {
-            "config": {
+            "metrics": {
                 "data": {
-                    "resources": "Ressourcen",
-                    "scan_interval": "Scan-Intervall [s]"
+                    "metrics": "Verfügbare Metriken"
                 },
-                "description": "Definiere die Ressourcen und das Scan-Intervall"
+                "description": "Definiere die zu sammelnden Metriken"
+            },
+            "resources": {
+                "data": {
+                    "resources": "Verfügbare Ressourcen"
+                },
+                "description": "Definiere die zu überwachenden Ressourcen"
             },
             "user": {
                 "data": {
@@ -67,15 +73,34 @@
             "cannot_connect": "Verbindung fehlgeschlagen",
             "invalid_auth": "Ungültige Authentifizierung",
             "no_resources": "Keine Ressourcen ausgewählt",
+            "no_metrics": "Keine Metriken ausgewählt",
             "unknown": "Unerwarteter Fehler"
         },
         "step": {
             "init": {
                 "data": {
-                    "resources": "Ressourcen",
+                    "resources": "Zu überwachenden Ressourcen",
+                    "metrics": "Zu sammelnden Metriken",
                     "scan_interval": "Scan-Intervall [s]"
                 },
-                "description": "Definiere die Ressourcen und das Scan-Intervall"
+                "data_description": {
+                    "metrics": "Hinweis: Die Auswahl wird für alle Resourcen übernommen."
+                }
+            }
+        }
+    },
+    "selector": {
+        "metrics": {
+            "options": {
+                "cpu_temp_celsius": "CPU-Temperatur",
+                "cpu_usage_pct": "CPU-Auslastung",
+                "disk_usage_bytes": "Festplattennutzung",
+                "disk_usage_pct": "Festplattennutzung (Prozent)",
+                "memory_usage_bytes": "Arbeitsspeichernutzung",
+                "memory_usage_pct": "Arbeitspeichernutzung (Prozent)",
+                "network_receive_bytes": "Dateneingang",
+                "network_transmit_bytes": "Datenausgang",
+                "uptime_seconds": "Laufzeit"
             }
         }
     }
