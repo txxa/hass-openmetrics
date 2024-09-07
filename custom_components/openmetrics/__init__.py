@@ -24,7 +24,13 @@ from .client import (
     ProcessingError,
     RequestError,
 )
-from .const import DOMAIN
+from .const import (
+    CONTAINER_METRICS,
+    DOMAIN,
+    NODE_METRICS,
+    PROVIDER_NAME_CADVISOR,
+    PROVIDER_NAME_NODE_EXPORTER,
+)
 from .coordinator import OpenMetricsDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -99,7 +105,57 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id)
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
-    return unload_ok
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old entry."""
+    _LOGGER.debug(
+        "Migrating configuration from version %s.%s",
+        config_entry.version,
+        config_entry.minor_version,
+    )
+
+    # Extract the connection data from the config entry
+    url = config_entry.data[CONF_URL]
+    username = config_entry.data.get(CONF_USERNAME)
+    password = config_entry.data.get(CONF_PASSWORD)
+    verify_ssl = config_entry.data[CONF_VERIFY_SSL]
+
+    # Get metaadata of the configured OpenMetrics provider
+    client = OpenMetricsClient(url, verify_ssl, username, password)
+    metadata = await client.get_metadata()
+
+    # Skip migration if not needed
+    if config_entry.version > 1:
+        # This means the user has downgraded from a future version
+        return False
+
+    # Version 1 migration
+    if config_entry.version == 1:
+        version = 1
+        new_data = {**config_entry.data}
+        if config_entry.minor_version < 1:
+            minor_version = 1
+            # Extract the available metrics based on the metadata
+            provider_name = metadata["provider"]["name"]
+            if provider_name == PROVIDER_NAME_CADVISOR:
+                provider_metrics = CONTAINER_METRICS
+            if provider_name == PROVIDER_NAME_NODE_EXPORTER:
+                provider_metrics = NODE_METRICS
+            available_metrics = list(dict.fromkeys(provider_metrics))
+            # Prepare new data for the config entry
+            new_data["resources"] = [config_entry.data[CONF_RESOURCES]]
+            new_data["metrics"] = available_metrics
+            new_data["scan_interval"] = config_entry.data[CONF_SCAN_INTERVAL]
+
+        hass.config_entries.async_update_entry(
+            config_entry, data=new_data, version=version, minor_version=minor_version
+        )
+        _LOGGER.debug(
+            "Migration to configuration version %s.%s successful",
+            config_entry.version,
+            config_entry.minor_version,
+        )
+
+    return True
