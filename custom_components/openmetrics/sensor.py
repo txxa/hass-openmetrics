@@ -152,12 +152,11 @@ def create_resource_sensors(
     """Create sensor entities for the given resource."""
     sensors = []
     host = hass.data[DOMAIN][entry.entry_id]["host"]
-    for description in SENSORS.values():
-        if resource["type"] == "container" and description.key == METRIC_CPU_TEMP:
-            continue
-        # Create and store sensor
-        sensor = create_sensor(resource, coordinator, description, host)
-        sensors.append(sensor)
+    for key, description in SENSORS.items():
+        # Check if metric is selected/enabled
+        if key in entry.data["metrics"]:
+            sensor = create_sensor(resource, coordinator, description, host)
+            sensors.append(sensor)
     return sensors
 
 
