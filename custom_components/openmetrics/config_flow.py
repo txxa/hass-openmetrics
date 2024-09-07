@@ -23,7 +23,11 @@ from homeassistant.const import (
 )
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.selector import selector
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
 from .client import (
     CannotConnectError,
@@ -35,10 +39,10 @@ from .client import (
 from .const import (
     CONF_METRICS,
     CONF_RESOURCES,
+    CONTAINER_METRICS,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
-    METRICS_CADVISOR,
-    METRICS_NODE_EXPORTER,
+    NODE_METRICS,
     PROVIDER_NAME_CADVISOR,
     PROVIDER_NAME_NODE_EXPORTER,
 )
@@ -61,9 +65,23 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for openmetrics."""
 
     VERSION = 1
+    MINOR_VERSION = 1
     title: str
     data: dict[str, Any]
     metadata: dict[str, Any]
+    provider_name: str
+
+    def _is_provider_supported(self, provider_name: str) -> bool:
+        """Check if the provider is supported."""
+        return provider_name in [PROVIDER_NAME_CADVISOR, PROVIDER_NAME_NODE_EXPORTER]
+
+    def _get_provider_metrics(self, provider_name: str) -> dict[str, dict[str, Any]]:
+        """Get the metrics for the provider."""
+        if provider_name == PROVIDER_NAME_CADVISOR:
+            return CONTAINER_METRICS
+        if provider_name == PROVIDER_NAME_NODE_EXPORTER:
+            return NODE_METRICS
+        return {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -82,16 +100,16 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     user_input
                 )
                 # Extract provider info
-                if "provider" in self.metadata:
-                    provider_name = self.metadata["provider"]["name"]
-                    provider_version = self.metadata["provider"]["version"]
+                self.provider_name = self.metadata["provider"]["name"]
+                provider_version = self.metadata["provider"].get("version")
                 # Define entry title
                 host = urllib.parse.urlparse(user_input[CONF_URL]).netloc
                 self.title = (
-                    f"{provider_name} metrics (host={host}, version={provider_version})"
+                    f"{self.provider_name} metrics (host={host}"
+                    f"{f', version={provider_version}' if provider_version else ''})"
                 )
-                # Show config form
-                return await self.async_step_config()
+                # Show resources form
+                return await self.async_step_resources()
             except CannotConnectError as e:
                 _LOGGER.error("Failed to connect: %s", str(e))
                 errors["base"] = "cannot_connect"
@@ -104,6 +122,9 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             except ProcessingError as e:
                 _LOGGER.error("Processing error: %s", str(e))
                 errors["base"] = "processing_error"
+            except ProviderError as e:
+                _LOGGER.error("Provider error: %s", str(e))
+                errors["base"] = "invalid_provider"
             except ResourcesError as e:
                 _LOGGER.error("Resources error: %s", str(e))
                 errors["base"] = "no_resources"
@@ -111,7 +132,10 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="user",
+            data_schema=STEP_USER_DATA_SCHEMA,
+            errors=errors,
+            last_step=False,
         )
 
     async def _async_validate_user_step_input(self, data: dict[str, Any]) -> tuple:
@@ -125,99 +149,139 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             client = OpenMetricsClient(url, verify_ssl, username, password)
             # Get metadata
             response = await client.get_metadata()
-            # Define entry data
-            self.data = data
+            # Check if provider is supported
+            if "provider" in response:
+                provider_name = response["provider"]["name"]
+                if not self._is_provider_supported(provider_name):
+                    raise ProviderError(f"Provider '{provider_name}' not supported")
+            else:
+                raise ProviderError("No provider info")
+            # Check if resources are available
+            if len(response.get("resources", [])) == 0:
+                raise ResourcesError("No resources available")
+            # Define scan interval
+            data[CONF_SCAN_INTERVAL] = DEFAULT_SCAN_INTERVAL
         except aiohttp.ClientError as e:
             raise e from CannotConnectError
         else:
             return (data, response)
 
-    async def async_step_config(
+    async def async_step_resources(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle the initial step."""
+        """Handle the resources definition step."""
         errors: dict[str, str] = {}
+        available_resources = [
+            resource["name"] for resource in self.metadata.get("resources", [])
+        ]
+        selected = available_resources
         # Process user input if provided
         if user_input is not None:
             try:
                 # Validate input
-                config_input = self._validate_config_step_input(user_input)
+                config_input = self._validate_resources_step_input(user_input)
                 # Set entry data
-                self.data[CONF_METRICS] = config_input[CONF_METRICS]
                 self.data[CONF_RESOURCES] = config_input[CONF_RESOURCES]
-                self.data[CONF_SCAN_INTERVAL] = config_input[CONF_SCAN_INTERVAL]
-                # Create entry
-                return self.async_create_entry(title=self.title, data=self.data)
-            except ProviderError as e:
-                _LOGGER.error("Provider error: %s", str(e))
-                errors["base"] = "invalid_provider"
+                # Show metrics form
+                return await self.async_step_metrics()
             except ResourcesError as e:
                 _LOGGER.error("Resources error: %s", str(e))
                 errors["base"] = "no_resources"
             except ValueError as e:
                 _LOGGER.error("Invalid input: %s", str(e))
                 errors["base"] = "invalid_input"
+            finally:
+                selected = user_input.get(CONF_RESOURCES, [])
         # Define data schema
-        resources = [
-            resource["name"] for resource in self.metadata.get("resources", [])
-        ]
         data_schema = vol.Schema(
             {
-                vol.Required(CONF_RESOURCES, default=vol.Coerce(list)([])): selector(
-                    {
-                        "select": {
-                            "options": resources,
-                            "multiple": True,
-                            "mode": "list",
-                        }
-                    }
-                ),
                 vol.Required(
-                    CONF_SCAN_INTERVAL, default=vol.Coerce(int)(DEFAULT_SCAN_INTERVAL)
-                ): selector(
-                    {
-                        "number": {
-                            "mode": "box",
-                            "min": 1,
-                            "max": 60,
-                            "step": 1,
-                        }
-                    }
+                    CONF_RESOURCES,
+                    description={"suggested_value": selected},
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=available_resources,
+                        translation_key=CONF_RESOURCES,
+                        multiple=True,
+                        mode=SelectSelectorMode.LIST,
+                    )
                 ),
             },
             extra=vol.ALLOW_EXTRA,
         )
         # Show form
         return self.async_show_form(
-            step_id="config",
-            data_schema=data_schema,
-            errors=errors,
+            step_id="resources", data_schema=data_schema, errors=errors, last_step=False
         )
 
-    def _validate_config_step_input(self, data: dict[str, Any]) -> dict[str, Any]:
+    def _validate_resources_step_input(self, data: dict[str, Any]) -> dict[str, Any]:
         """Process user input and create new or update existing config entry."""
-        metrics = {}
         resources = data[CONF_RESOURCES]
-        scan_interval = data[CONF_SCAN_INTERVAL]
-
-        if "provider" in self.metadata:
-            provider_name = self.metadata["provider"]["name"]
-            if provider_name == PROVIDER_NAME_NODE_EXPORTER:
-                metrics = METRICS_NODE_EXPORTER
-            elif provider_name == PROVIDER_NAME_CADVISOR:
-                metrics = METRICS_CADVISOR
-            else:
-                raise ProviderError(f"Provider '{provider_name}' not supported")
-        else:
-            raise ProviderError("No provider info")
         if len(resources) == 0:
             raise ResourcesError("No resources selected")
-        if scan_interval < 1:
-            raise ValueError("Scan interval must be at least 1 second")
+        return {
+            CONF_RESOURCES: resources,
+        }
+
+    async def async_step_metrics(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle the metrics definition step."""
+        errors: dict[str, str] = {}
+        provider_metrics = self._get_provider_metrics(self.provider_name)
+        available_metrics = list(dict.fromkeys(provider_metrics))
+        selected = available_metrics
+        # Process user input if provided
+        if user_input is not None:
+            try:
+                # Validate input
+                config_input = self._validate_metrics_step_input(user_input)
+                # Set entry data
+                metrics = {}
+                for metric_key, metric_data in provider_metrics.items():
+                    if metric_key in config_input[CONF_METRICS]:
+                        if metric_key not in metrics:
+                            metrics[metric_key] = metric_data
+                self.data[CONF_METRICS] = metrics
+                # Create entry
+                return self.async_create_entry(title=self.title, data=self.data)
+            except MetricsError as e:
+                _LOGGER.error("Metrics error: %s", str(e))
+                errors["base"] = "no_metrics"
+            except ValueError as e:
+                _LOGGER.error("Invalid input: %s", str(e))
+                errors["base"] = "invalid_input"
+            finally:
+                selected = user_input.get(CONF_METRICS, [])
+        # Define data schema
+        data_schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_METRICS,
+                    description={"suggested_value": selected},
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=available_metrics,
+                        translation_key=CONF_METRICS,
+                        multiple=True,
+                        mode=SelectSelectorMode.LIST,
+                    )
+                ),
+            },
+            extra=vol.ALLOW_EXTRA,
+        )
+        # Show form
+        return self.async_show_form(
+            step_id="metrics", data_schema=data_schema, errors=errors, last_step=True
+        )
+
+    def _validate_metrics_step_input(self, data: dict[str, Any]) -> dict[str, Any]:
+        """Process user input and create new or update existing config entry."""
+        metrics = data[CONF_METRICS]
+        if len(metrics) == 0:
+            raise MetricsError("No metrics selected")
         return {
             CONF_METRICS: metrics,
-            CONF_RESOURCES: resources,
-            CONF_SCAN_INTERVAL: scan_interval,
         }
 
     @staticmethod
@@ -225,6 +289,10 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
         return OpenMetricsOptionsFlowHandler(config_entry)
+
+
+class MetricsError(HomeAssistantError):
+    """Error to indicate issues related to metrics."""
 
 
 class ResourcesError(HomeAssistantError):
