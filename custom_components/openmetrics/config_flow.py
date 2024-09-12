@@ -45,6 +45,8 @@ from .const import (
     NODE_METRICS,
     PROVIDER_NAME_CADVISOR,
     PROVIDER_NAME_NODE_EXPORTER,
+    PROVIDER_TYPE_CONTAINER,
+    PROVIDER_TYPE_NODE,
 )
 from .options_flow import OpenMetricsOptionsFlowHandler
 
@@ -75,13 +77,20 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         """Check if the provider is supported."""
         return provider_name in [PROVIDER_NAME_CADVISOR, PROVIDER_NAME_NODE_EXPORTER]
 
-    def _get_provider_metrics(self, provider_name: str) -> dict[str, dict[str, Any]]:
-        """Get the metrics for the provider."""
-        if provider_name == PROVIDER_NAME_CADVISOR:
-            return CONTAINER_METRICS
-        if provider_name == PROVIDER_NAME_NODE_EXPORTER:
-            return NODE_METRICS
-        return {}
+    def _get_available_metrics(self) -> dict[str, dict[str, Any]]:
+        """Get the available provider metrics."""
+        provider_metrics = {}
+        available_metrics = self.metadata.get("metrics", [])
+        provider_type = self.metadata["provider"]["type"]
+        if provider_type == PROVIDER_TYPE_CONTAINER:
+            provider_metrics = CONTAINER_METRICS
+        elif provider_type == PROVIDER_TYPE_NODE:
+            provider_metrics = NODE_METRICS
+        return {
+            metric_name: metric_data
+            for metric_name, metric_data in provider_metrics.items()
+            if metric_name in available_metrics
+        }
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -228,8 +237,8 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle the metrics definition step."""
         errors: dict[str, str] = {}
-        provider_metrics = self._get_provider_metrics(self.provider_name)
-        available_metrics = list(dict.fromkeys(provider_metrics))
+        available_provider_metrics = self._get_available_metrics()
+        available_metrics = list(dict.fromkeys(available_provider_metrics))
         selected = available_metrics
         # Process user input if provided
         if user_input is not None:
@@ -238,7 +247,7 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                 config_input = self._validate_metrics_step_input(user_input)
                 # Set entry data
                 metrics = {}
-                for metric_key, metric_data in provider_metrics.items():
+                for metric_key, metric_data in available_provider_metrics.items():
                     if metric_key in config_input[CONF_METRICS]:
                         if metric_key not in metrics:
                             metrics[metric_key] = metric_data

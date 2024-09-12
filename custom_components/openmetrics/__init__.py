@@ -24,13 +24,7 @@ from .client import (
     ProcessingError,
     RequestError,
 )
-from .const import (
-    CONTAINER_METRICS,
-    DOMAIN,
-    NODE_METRICS,
-    PROVIDER_NAME_CADVISOR,
-    PROVIDER_NAME_NODE_EXPORTER,
-)
+from .const import DOMAIN
 from .coordinator import OpenMetricsDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -138,12 +132,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         if config_entry.minor_version < 1:
             minor_version = 1
             # Extract the available metrics based on the metadata
-            provider_name = metadata["provider"]["name"]
-            if provider_name == PROVIDER_NAME_CADVISOR:
-                provider_metrics = CONTAINER_METRICS
-            if provider_name == PROVIDER_NAME_NODE_EXPORTER:
-                provider_metrics = NODE_METRICS
-            available_metrics = list(dict.fromkeys(provider_metrics))
+            available_metrics = metadata["metrics"]
             # Prepare new data for the config entry
             new_data["resources"] = [config_entry.data[CONF_RESOURCES]]
             new_data["metrics"] = available_metrics

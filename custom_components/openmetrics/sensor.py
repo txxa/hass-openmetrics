@@ -36,6 +36,7 @@ from .const import (
     PROPERTY_DISK_SIZE,
     PROPERTY_LAST_START_TIME,
     PROPERTY_MEMORY_SIZE,
+    RESOURCE_TYPE_CONTAINER,
 )
 
 SENSORS = {
@@ -165,7 +166,7 @@ def create_sensor(resource, coordinator, description, host):
     unique_id = f"{host}_{resource['name']}"
     entry_type = None
     version = None
-    if resource["type"] == "container":
+    if resource["type"] == RESOURCE_TYPE_CONTAINER:
         entry_type = DeviceEntryType.SERVICE
         version = resource.get("version")
     # Device info object
