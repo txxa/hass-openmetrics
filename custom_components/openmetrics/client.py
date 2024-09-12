@@ -20,6 +20,10 @@ from .const import (
     NODE_UNAME_INFO,
     PROVIDER_NAME_CADVISOR,
     PROVIDER_NAME_NODE_EXPORTER,
+    PROVIDER_TYPE_CONTAINER,
+    PROVIDER_TYPE_NODE,
+    RESOURCE_TYPE_CONTAINER,
+    RESOURCE_TYPE_NODE,
 )
 from .lib import parser, prom_parser
 
@@ -67,8 +71,10 @@ class OpenMetricsClient:
         self.username = username
         if password is not None:
             self.password = str(password)
-        self.is_node_exporter = False
-        self.is_cadvisor = False
+        self.is_node_metrics_provider = False
+        self.is_container_metrics_provider = False
+        self.node_metric_keys = self._get_metric_keys(NODE_METRICS)
+        self.container_metric_keys = self._get_metric_keys(CONTAINER_METRICS)
 
     def _get_metric_filters(self, metric_definitions: dict) -> dict:
         """Get metric filters."""
@@ -78,6 +84,17 @@ class OpenMetricsClient:
                 if metric_key not in metric_filters:
                     metric_filters[metric_key] = metric_filter
         return metric_filters
+
+    def _get_metric_keys(self, metric_definitions: dict) -> dict:
+        """Get metric keys."""
+        # return [key for metric in metric_definitions.values() for key in metric]
+        metric_keys = {}
+        for metric_name, metric_definition in metric_definitions.items():
+            for metric_key in metric_definition:
+                if metric_key not in metric_keys:
+                    metric_keys[metric_key] = []
+                metric_keys[metric_key].append(metric_name)
+        return metric_keys
 
     async def _make_request(
         self,
@@ -150,9 +167,10 @@ class OpenMetricsClient:
                 break
             output["provider"] = {
                 "name": provider,
+                "type": PROVIDER_TYPE_NODE,
                 "version": os_version,
             }
-            self.is_node_exporter = True
+            self.is_node_metrics_provider = True
             return True
         if family.name == CADVISOR_VERSION_INFO:
             provider = PROVIDER_NAME_CADVISOR
@@ -161,9 +179,10 @@ class OpenMetricsClient:
                 break
             output["provider"] = {
                 "name": provider,
+                "type": PROVIDER_TYPE_CONTAINER,
                 "version": os_version,
             }
-            self.is_cadvisor = True
+            self.is_container_metrics_provider = True
             return True
         return False
 
@@ -175,7 +194,7 @@ class OpenMetricsClient:
             for sample in family.samples:
                 nodename = sample.labels.get("nodename", None)
                 if nodename:
-                    output["resources"][0]["type"] = "node"
+                    output["resources"][0]["type"] = RESOURCE_TYPE_NODE
                     output["resources"][0]["name"] = nodename
                 break
         elif family.name == NODE_OS_INFO:
@@ -187,6 +206,11 @@ class OpenMetricsClient:
                 if os_version:
                     output["resources"][0]["version"] = os_version
                 break
+        if family.name in self.node_metric_keys:
+            metric_name = self.node_metric_keys[family.name]
+            for metric in metric_name:
+                if metric not in output["metrics"]:
+                    output["metrics"].append(metric)
 
     def _extract_container_metadata(self, family, output):
         """Extract container metadata."""
@@ -201,29 +225,44 @@ class OpenMetricsClient:
                     )
                     output["resources"].append(
                         {
-                            "type": "container",
+                            "type": RESOURCE_TYPE_CONTAINER,
                             "name": container_name,
                             "software": container_image,
                             "version": image_version,
                         }
                     )
+        if family.name in self.container_metric_keys:
+            metric_name = self.container_metric_keys[family.name]
+            for metric in metric_name:
+                if metric not in output["metrics"]:
+                    output["metrics"].append(metric)
 
     def _extract_metadata(self, families: Iterable[Metric]) -> dict:
         """Extract metadata."""
-        output = {
-            "provider": {},
-            "resources": [],
-        }
         try:
+            output = {
+                "provider": {},
+                "resources": [],
+                "metrics": [],
+            }
+            provider_metadata_extracted = False
             for family in families:
-                if self._extract_provider_metadata(family, output):
-                    continue
-                if self.is_node_exporter and "node_" in family.name:
+                # Extract provider metadata
+                if provider_metadata_extracted is False:
+                    provider_metadata_extracted = self._extract_provider_metadata(
+                        family, output
+                    )
+                # Extract node metadata
+                if self.is_node_metrics_provider or "node_" in family.name:
                     self._extract_node_metadata(family, output)
-                elif self.is_cadvisor and "container_" in family.name:
+                # Extract container metadata
+                elif self.is_container_metrics_provider or "container_" in family.name:
                     self._extract_container_metadata(family, output)
+
             if len(output["resources"]) == 0:
                 raise ProcessingError("No resources found")
+            if len(output["metrics"]) == 0:
+                raise ProcessingError("No metrics found")
         except Exception as e:
             raise ProcessingError(str(e)) from e
         else:
@@ -246,7 +285,7 @@ class OpenMetricsClient:
         is_sample_of_resource = False
         if "name" in sample.labels:
             is_sample_of_resource = resource in sample.labels["name"]
-        elif self.is_node_exporter:
+        elif self.is_node_metrics_provider:
             is_sample_of_resource = True
         # Process sample if sample belongs to resource
         if is_sample_of_resource:
@@ -290,9 +329,9 @@ class OpenMetricsClient:
         output = {}
         try:
             # Define metrics set
-            if self.is_node_exporter:
+            if self.is_node_metrics_provider:
                 metrics = self._get_metric_filters(NODE_METRICS)
-            elif self.is_cadvisor:
+            elif self.is_container_metrics_provider:
                 metrics = self._get_metric_filters(CONTAINER_METRICS)
             else:
                 exception_message = "Unknown provider"
