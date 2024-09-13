@@ -113,8 +113,6 @@ class OpenMetricsOptionsFlowHandler(config_entries.OptionsFlow):
             try:
                 # Validate input
                 config_input = self._validate_input(user_input)
-                # Get currently configured device entries
-                self.device_entries = self._get_integration_device_entries()
                 # Update resources
                 await self._async_update_resources(config_input[CONF_RESOURCES])
                 # Update metrics
@@ -231,7 +229,8 @@ class OpenMetricsOptionsFlowHandler(config_entries.OptionsFlow):
         """Update the resources, adding new ones and removing unselected ones."""
         # Remove unselected resources
         removed_resources = []
-        for device in self.device_entries:
+        device_entries = self._get_integration_device_entries()
+        for device in device_entries:
             for resource in self.config_entry.data[CONF_RESOURCES]:
                 if resource not in resources:
                     removed = await self._async_remove_resource_from_hass(
@@ -255,7 +254,8 @@ class OpenMetricsOptionsFlowHandler(config_entries.OptionsFlow):
 
     async def _async_update_metrics(self, metrics: list[str]) -> None:
         """Update the metrics, adding new ones and removing unselected ones."""
-        for device in self.device_entries:
+        device_entries = self._get_integration_device_entries()
+        for device in device_entries:
             # Remove unselected metrics
             removed_metrics = []
             for metric in self.config_entry.data[CONF_METRICS]:
@@ -370,6 +370,10 @@ class OpenMetricsOptionsFlowHandler(config_entries.OptionsFlow):
                 self.hass.data[DOMAIN][self.config_entry.entry_id]["coordinators"][
                     resource["name"]
                 ] = coordinator
+                # Add resource to config entry
+                self.hass.data[DOMAIN][self.config_entry.entry_id]["resources"].append(
+                    resource
+                )
                 return True
         return False
 
