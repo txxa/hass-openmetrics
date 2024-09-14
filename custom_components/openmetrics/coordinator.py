@@ -425,9 +425,11 @@ class OpenMetricsDataUpdateCoordinator(DataUpdateCoordinator):
                 resource, data[resource]
             )
             sensor_metrics[resource][METRIC_UPTIME_SECONDS] = uptime_seconds
-            last_start_time = datetime.fromtimestamp(start_time_seconds)
-            last_start_time = last_start_time.replace(tzinfo=dt_util.UTC)
-            self.last_start_time = last_start_time
+            if start_time_seconds is not None:
+                last_start_time = datetime.fromtimestamp(
+                    float(start_time_seconds), dt_util.UTC
+                )
+                self.last_start_time = last_start_time
 
         if len(sensor_metrics) == 0:
             raise ValueError("No metrics found")
