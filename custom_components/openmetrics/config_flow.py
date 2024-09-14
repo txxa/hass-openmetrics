@@ -43,8 +43,6 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     NODE_METRICS,
-    PROVIDER_NAME_CADVISOR,
-    PROVIDER_NAME_NODE_EXPORTER,
     PROVIDER_TYPE_CONTAINER,
     PROVIDER_TYPE_NODE,
 )
@@ -73,19 +71,20 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     metadata: dict[str, Any]
     provider_name: str
 
-    def _is_provider_supported(self, provider_name: str) -> bool:
-        """Check if the provider is supported."""
-        return provider_name in [PROVIDER_NAME_CADVISOR, PROVIDER_NAME_NODE_EXPORTER]
+    def _get_available_resources(self) -> list[str]:
+        """Get available resources from the metadata."""
+        resources = self.metadata.get("resources", [])
+        return [resource["name"] for resource in resources]
 
     def _get_available_metrics(self) -> dict[str, dict[str, Any]]:
         """Get the available provider metrics."""
         provider_metrics = {}
         available_metrics = self.metadata.get("metrics", [])
         provider_type = self.metadata["provider"]["type"]
-        if provider_type == PROVIDER_TYPE_CONTAINER:
-            provider_metrics = CONTAINER_METRICS
-        elif provider_type == PROVIDER_TYPE_NODE:
+        if provider_type == PROVIDER_TYPE_NODE:
             provider_metrics = NODE_METRICS
+        elif provider_type == PROVIDER_TYPE_CONTAINER:
+            provider_metrics = CONTAINER_METRICS
         return {
             metric_name: metric_data
             for metric_name, metric_data in provider_metrics.items()
@@ -109,14 +108,16 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
                     user_input
                 )
                 # Extract provider info
-                self.provider_name = self.metadata["provider"]["name"]
+                provider_name = self.metadata["provider"].get("name")
                 provider_version = self.metadata["provider"].get("version")
                 # Define entry title
                 host = urllib.parse.urlparse(user_input[CONF_URL]).netloc
-                self.title = (
-                    f"{self.provider_name} metrics (host={host}"
-                    f"{f', version={provider_version}' if provider_version else ''})"
-                )
+                self.title = host
+                if provider_name:
+                    self.title += f" ({provider_name}"
+                    if provider_version:
+                        self.title += f" {provider_version}"
+                    self.title += ")"
                 # Show resources form
                 return await self.async_step_resources()
             except CannotConnectError as e:
@@ -131,9 +132,6 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             except ProcessingError as e:
                 _LOGGER.error("Processing error: %s", str(e))
                 errors["base"] = "processing_error"
-            except ProviderError as e:
-                _LOGGER.error("Provider error: %s", str(e))
-                errors["base"] = "invalid_provider"
             except ResourcesError as e:
                 _LOGGER.error("Resources error: %s", str(e))
                 errors["base"] = "no_resources"
@@ -158,13 +156,9 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
             client = OpenMetricsClient(url, verify_ssl, username, password)
             # Get metadata
             response = await client.get_metadata()
-            # Check if provider is supported
-            if "provider" in response:
-                provider_name = response["provider"]["name"]
-                if not self._is_provider_supported(provider_name):
-                    raise ProviderError(f"Provider '{provider_name}' not supported")
-            else:
-                raise ProviderError("No provider info")
+            # Check if provider is recognized
+            if "name" not in response["provider"]:
+                _LOGGER.warning("No provider recognized")
             # Check if resources are available
             if len(response.get("resources", [])) == 0:
                 raise ResourcesError("No resources available")
@@ -180,9 +174,7 @@ class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Handle the resources definition step."""
         errors: dict[str, str] = {}
-        available_resources = [
-            resource["name"] for resource in self.metadata.get("resources", [])
-        ]
+        available_resources = self._get_available_resources()
         selected = available_resources
         # Process user input if provided
         if user_input is not None:
@@ -306,7 +298,3 @@ class MetricsError(HomeAssistantError):
 
 class ResourcesError(HomeAssistantError):
     """Error to indicate issues related to resources."""
-
-
-class ProviderError(HomeAssistantError):
-    """Error to indicate issues related to the metrics provider."""

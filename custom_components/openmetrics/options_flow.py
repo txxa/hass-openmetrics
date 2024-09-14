@@ -35,8 +35,8 @@ from .const import (
     CONTAINER_METRICS,
     DOMAIN,
     NODE_METRICS,
-    PROVIDER_NAME_CADVISOR,
-    PROVIDER_NAME_NODE_EXPORTER,
+    PROVIDER_TYPE_CONTAINER,
+    PROVIDER_TYPE_NODE,
 )
 from .coordinator import OpenMetricsDataUpdateCoordinator
 from .sensor import SENSORS, create_resource_sensors, create_sensor
@@ -53,18 +53,25 @@ class OpenMetricsOptionsFlowHandler(config_entries.OptionsFlow):
         self.client = self._create_client(dict(config_entry.data))
         self.metadata = {}
 
-    def _get_available_resources(self, resources) -> list[str]:
+    def _get_available_resources(self) -> list[str]:
         """Get available resources from the metadata."""
+        resources = self.metadata.get("resources", [])
         return [resource["name"] for resource in resources]
 
-    def _get_available_metrics(self, provider_name) -> list[str]:
-        """Get available metrics for a provider."""
+    def _get_available_metrics(self) -> dict[str, dict[str, Any]]:
+        """Get the available provider metrics."""
         provider_metrics = {}
-        if provider_name == PROVIDER_NAME_CADVISOR:
-            provider_metrics = CONTAINER_METRICS
-        if provider_name == PROVIDER_NAME_NODE_EXPORTER:
+        available_metrics = self.metadata.get("metrics", [])
+        provider_type = self.metadata["provider"]["type"]
+        if provider_type == PROVIDER_TYPE_NODE:
             provider_metrics = NODE_METRICS
-        return list(dict.fromkeys(provider_metrics))
+        elif provider_type == PROVIDER_TYPE_CONTAINER:
+            provider_metrics = CONTAINER_METRICS
+        return {
+            metric_name: metric_data
+            for metric_name, metric_data in provider_metrics.items()
+            if metric_name in available_metrics
+        }
 
     def _get_platform(self, type: str) -> EntityPlatform:
         platforms = self.hass.data["entity_platform"][DOMAIN]
@@ -148,12 +155,8 @@ class OpenMetricsOptionsFlowHandler(config_entries.OptionsFlow):
         # Define data schema
         try:
             self.metadata = await self._async_get_metadata()
-            available_resources = self._get_available_resources(
-                self.metadata.get("resources", [])
-            )
-            available_metrics = self._get_available_metrics(
-                self.metadata["provider"]["name"]
-            )
+            available_resources = self._get_available_resources()
+            available_metrics = list(dict.fromkeys(self._get_available_metrics()))
         except CannotConnectError as e:
             _LOGGER.error("Failed to connect: %s", str(e))
             errors["base"] = "cannot_connect"
