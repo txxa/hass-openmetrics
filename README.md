@@ -26,7 +26,8 @@ This integration allows you to monitor various metrics from OpenMetrics and Prom
 - Multi-container support for container metrics providers.
 - Basic authentication support.
 - SSL/TLS support.
-- Configurable sources for multi-container metrics providers.
+- Dynamic sources management for multi-container metrics providers.
+- Dynamic metrics management.
 - Configurable scan interval for sensor data updates.
 
 ## Installation
