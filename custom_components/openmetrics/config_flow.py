@@ -64,8 +64,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 class OpenMetricsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for openmetrics."""
 
-    VERSION = 1
-    MINOR_VERSION = 1
+    VERSION = 2
     title: str
     data: dict[str, Any]
     metadata: dict[str, Any]
