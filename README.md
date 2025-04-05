@@ -54,7 +54,7 @@ Configuration is done through the Home Assistant UI.
 
 To add the integration, go to Settings ➤ Devices & Services ➤ Integrations, click ➕ Add Integration, and search for "OpenMetrics".
 
-The initial setup needs the following information:
+The initial setup requests the following information:
 
 - **Provider URL**: The URL of the metrics provider.
 - **Username**: The username for the metrics provider web interface.
