@@ -2,4 +2,4 @@ colorlog==6.10.1
 homeassistant==2025.12.3
 pip>=21.3.1
 ruff==0.14.0
-pycares<5.0.0 # temporary fix
+pycares<6.0.0 # temporary fix
