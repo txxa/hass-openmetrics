@@ -55,6 +55,20 @@ class MetricsProvider(ABC):
             if metric_filter.matches_metric(family.name):
                 return family
 
+    def matches_families(self, families: list[Metric]) -> bool:
+        """Return True if the metric families are characteristic for this provider.
+
+        Providers without a single identifier metric can override this method to
+        be detected based on a combination of metric families and labels.
+        """
+        return False
+
+    def get_metric_key(self, sample_name: str) -> str:
+        """Return the metric key used to store the value of a sample."""
+        if sample_name.endswith("_total"):
+            return sample_name.replace("_total", "")
+        return sample_name
+
     @abstractmethod
     def extract_provider_info(self, family: Metric, provider_info: ProviderInfoData):
         """Extract provider information from metric family."""

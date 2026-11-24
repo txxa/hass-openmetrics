@@ -1,0 +1,5 @@
+# Test and lint dependencies. Requires Python 3.13 (>= 3.13.2, as Home Assistant 2025.12).
+# The plugin pins the matching Home Assistant release (2025.12.4) and pytest itself,
+# so this file is installed on its own, without requirements.txt.
+pytest-homeassistant-custom-component==0.13.301
+ruff==0.14.0

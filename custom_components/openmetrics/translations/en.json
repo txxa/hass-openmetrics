@@ -55,6 +55,9 @@
                 "state_attributes": {
                     "disk_size": {
                         "name": "Filesystem size"
+                    },
+                    "disk_device": {
+                        "name": "Device"
                     }
                 }
             },
@@ -63,6 +66,9 @@
                 "state_attributes": {
                     "disk_size": {
                         "name": "Filesystem size"
+                    },
+                    "disk_device": {
+                        "name": "Device"
                     }
                 }
             },
@@ -133,6 +139,43 @@
             },
             "virtual_resources": {
                 "name": "Virtual resources"
+            },
+            "swap_usage_bytes": {
+                "name": "Swap usage",
+                "state_attributes": {
+                    "swap_size": {
+                        "name": "Swap size"
+                    }
+                }
+            },
+            "swap_usage_pct": {
+                "name": "Swap usage [percent]",
+                "state_attributes": {
+                    "swap_size": {
+                        "name": "Swap size"
+                    }
+                }
+            },
+            "load_average_1m": {
+                "name": "Load average (1 min)"
+            },
+            "load_average_5m": {
+                "name": "Load average (5 min)"
+            },
+            "load_average_15m": {
+                "name": "Load average (15 min)"
+            },
+            "fail2ban_banned": {
+                "name": "Fail2ban – Currently banned ({jail})"
+            },
+            "fail2ban_failed": {
+                "name": "Fail2ban – Currently failed ({jail})"
+            },
+            "fail2ban_total_banned": {
+                "name": "Fail2ban – Currently banned (total)"
+            },
+            "fail2ban_total_failed": {
+                "name": "Fail2ban – Currently failed (total)"
             }
         }
     },
@@ -174,7 +217,16 @@
                 "virtual_resource_image_update_info": "Virtual resources: Image update info",
                 "virtual_resource_status": "Virtual resources: Status",
                 "virtual_resource_uptime": "Virtual resource: Uptime",
-                "virtual_resources": "Virtual resources"
+                "virtual_resources": "Virtual resources",
+                "swap_usage_bytes": "Swap usage",
+                "swap_usage_pct": "Swap usage [percent]",
+                "load_average_1m": "Load average (1 min)",
+                "load_average_5m": "Load average (5 min)",
+                "load_average_15m": "Load average (15 min)",
+                "fail2ban_banned": "Fail2ban – Currently banned",
+                "fail2ban_failed": "Fail2ban – Currently failed",
+                "fail2ban_total_banned": "Fail2ban – Currently banned (total)",
+                "fail2ban_total_failed": "Fail2ban – Currently failed (total)"
             }
         }
     }

@@ -1,0 +1,71 @@
+# HELP cpu_usage_idle Telegraf collected metric
+# TYPE cpu_usage_idle gauge
+cpu_usage_idle{cpu="cpu-total",host="sweh00",location="rzob",platform="nixos",profile="generic",resource_group="sweh"} 68.23176823168284
+# HELP cpu_usage_system Telegraf collected metric
+# TYPE cpu_usage_system gauge
+cpu_usage_system{cpu="cpu-total",host="sweh00",location="rzob",platform="nixos",profile="generic",resource_group="sweh"} 10.1
+# HELP cpu_usage_user Telegraf collected metric
+# TYPE cpu_usage_user gauge
+cpu_usage_user{cpu="cpu-total",host="sweh00",location="rzob",platform="nixos",profile="generic",resource_group="sweh"} 21.6
+# HELP disk_free Telegraf collected metric
+# TYPE disk_free gauge
+disk_free{device="vda1",fstype="xfs",host="sweh00",label="root",mode="rw",path="/"} 1.6e+10
+disk_free{device="vdb1",fstype="xfs",host="sweh00",label="tmp",mode="rw",path="/tmp"} 9.8e+09
+# HELP disk_total Telegraf collected metric
+# TYPE disk_total gauge
+disk_total{device="vda1",fstype="xfs",host="sweh00",label="root",mode="rw",path="/"} 2.0e+10
+disk_total{device="vdb1",fstype="xfs",host="sweh00",label="tmp",mode="rw",path="/tmp"} 1.0e+10
+# HELP disk_used Telegraf collected metric
+# TYPE disk_used gauge
+disk_used{device="vda1",fstype="xfs",host="sweh00",label="root",mode="rw",path="/"} 4.0e+09
+disk_used{device="vdb1",fstype="xfs",host="sweh00",label="tmp",mode="rw",path="/tmp"} 2.0e+08
+# HELP disk_used_percent Telegraf collected metric
+# TYPE disk_used_percent gauge
+disk_used_percent{device="vda1",fstype="xfs",host="sweh00",label="root",mode="rw",path="/"} 43.7600797910119
+disk_used_percent{device="vdb1",fstype="xfs",host="sweh00",label="tmp",mode="rw",path="/tmp"} 2.491303165448478
+# HELP mem_available Telegraf collected metric
+# TYPE mem_available gauge
+mem_available{host="sweh00"} 1.537081344e+09
+# HELP mem_total Telegraf collected metric
+# TYPE mem_total gauge
+mem_total{host="sweh00"} 3.08000768e+09
+# HELP mem_used Telegraf collected metric
+# TYPE mem_used gauge
+mem_used{host="sweh00"} 1.542926336e+09
+# HELP mem_used_percent Telegraf collected metric
+# TYPE mem_used_percent gauge
+mem_used_percent{host="sweh00"} 50.09488599716738
+# HELP net_bytes_recv Telegraf collected metric
+# TYPE net_bytes_recv counter
+net_bytes_recv{host="sweh00",interface="ethfe"} 1.0945177863e+10
+net_bytes_recv{host="sweh00",interface="ethsrv"} 2.309451245e+09
+net_bytes_recv{host="sweh00",interface="wg-home"} 1.74172448e+08
+# HELP net_bytes_sent Telegraf collected metric
+# TYPE net_bytes_sent counter
+net_bytes_sent{host="sweh00",interface="ethfe"} 8.39591458e+08
+net_bytes_sent{host="sweh00",interface="ethsrv"} 7.80659468e+08
+net_bytes_sent{host="sweh00",interface="wg-home"} 3.909098e+07
+# HELP swap_total Telegraf collected metric
+# TYPE swap_total gauge
+swap_total{host="sweh00"} 1.859121152e+09
+# HELP swap_used Telegraf collected metric
+# TYPE swap_used gauge
+swap_used{host="sweh00"} 9.07464704e+08
+# HELP swap_used_percent Telegraf collected metric
+# TYPE swap_used_percent gauge
+swap_used_percent{host="sweh00"} 48.81148832198323
+# HELP system_load1 Telegraf collected metric
+# TYPE system_load1 gauge
+system_load1{host="sweh00"} 0.29
+# HELP system_load15 Telegraf collected metric
+# TYPE system_load15 gauge
+system_load15{host="sweh00"} 0.33
+# HELP system_load5 Telegraf collected metric
+# TYPE system_load5 gauge
+system_load5{host="sweh00"} 0.38
+# HELP system_n_cpus Telegraf collected metric
+# TYPE system_n_cpus gauge
+system_n_cpus{host="sweh00"} 1
+# HELP system_uptime Telegraf collected metric
+# TYPE system_uptime gauge
+system_uptime{host="sweh00"} 341695

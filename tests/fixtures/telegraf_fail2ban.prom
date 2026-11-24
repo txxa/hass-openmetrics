@@ -1,0 +1,12 @@
+# HELP fail2ban_banned Telegraf collected metric
+# TYPE fail2ban_banned gauge
+fail2ban_banned{host="sweh00",jail="adguardhome"} 0
+fail2ban_banned{host="sweh00",jail="homeassistant"} 0
+fail2ban_banned{host="sweh00",jail="postfix-sasl"} 2
+fail2ban_banned{host="sweh00",jail="sshd"} 5
+# HELP fail2ban_failed Telegraf collected metric
+# TYPE fail2ban_failed gauge
+fail2ban_failed{host="sweh00",jail="adguardhome"} 0
+fail2ban_failed{host="sweh00",jail="homeassistant"} 0
+fail2ban_failed{host="sweh00",jail="postfix-sasl"} 1
+fail2ban_failed{host="sweh00",jail="sshd"} 3

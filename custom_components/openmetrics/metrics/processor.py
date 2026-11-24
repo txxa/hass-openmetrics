@@ -76,6 +76,11 @@ class OpenMetricsProcessor:
                 if provider:
                     _LOGGER.debug("Metrics provider detected: %s", provider.name)
                     break
+        # Detect providers without identifier metric by their characteristic metrics
+        if provider is None:
+            provider = self._registry.detect_provider(families)
+            if provider:
+                _LOGGER.debug("Metrics provider detected: %s", provider.name)
         # Return provider
         return provider
 
@@ -140,11 +145,8 @@ class OpenMetricsProcessor:
                     for sample in family.samples:
                         # Check if metric sample is relevant
                         if metric_filter.matches_labels(sample):
-                            # Set metric key without "_total" suffix
-                            if sample.name.endswith("_total"):
-                                metric_key = sample.name.replace("_total", "")
-                            else:
-                                metric_key = sample.name
+                            # Set metric key (provider specific, default without "_total" suffix)
+                            metric_key = self._provider.get_metric_key(sample.name)
                             # Set resource according to provider
                             if (
                                 metric_filter.resource_label
